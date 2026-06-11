@@ -14,7 +14,7 @@ app = Flask(__name__,
 
 # --- CLOUD DATABASE CONFIGURATION ---
 # Replace 'YOUR_ACTUAL_PASSWORD' inside the URI with your private Supabase account password!
-DB_URI = "postgresql://postgres:YOUR_ACTUAL_PASSWORD@db.fhdngrkozyqdnktxckcy.supabase.co:5432/postgres"
+DB_URI = "postgresql://postgres:#@supernova#@75@db.fhdngrkozyqdnktxckcy.supabase.co:5432/postgres"
 
 def save_transaction_to_db(language, full_response_text):
     """
