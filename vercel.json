@@ -11,5 +11,9 @@
       "src": "/(.*)",
       "dest": "api/index.py"
     }
+  ],
+  "systemFiles": [
+    "tesseract-ocr",
+    "tesseract-ocr-eng"
   ]
 }
