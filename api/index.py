@@ -1,35 +1,25 @@
 import os
 import re
-import io  # Added for safe in-memory file processing
+import io
 import pytesseract
 import psycopg2 # type: ignore
 from PIL import Image
 from flask import Flask, render_template, request, jsonify
 import ollama
 
-# --- ⚡ SMART ENVIRONMENT DETECTION FOR FRONTEND ASSETS ⚡ ---
-# If running on Vercel's cloud production network, look one directory backward (../)
-# If running locally on your laptop workspace, look right inside the current folder path
-if os.environ.get('VERCEL') or 'vercel' in os.getcwd().lower():
-    app = Flask(__name__, template_folder='../templates', static_folder='../static')
-else:
-    current_directory = os.path.dirname(os.path.abspath(__file__))
-    app = Flask(__name__, 
-                template_folder=os.path.join(current_directory, 'templates'), 
-                static_folder=os.path.join(current_directory, 'static'))
+# --- ⚡ VERCEL API RECONCILIATION CONFIGURATION ⚡ ---
+# Since this file is inside the 'api' folder on GitHub, it must look one level back (../) to find templates
+app = Flask(__name__, 
+            template_folder='../templates', 
+            static_folder='../static')
 
 # --- CLOUD DATABASE CONFIGURATION ---
 DB_URI = "postgresql://postgres:SuperNova75Legalapp@db.fhdngrkozyqdnktxckcy.supabase.co:5432/postgres"
 
 def save_transaction_to_db(language, full_response_text):
-    """
-    Inserts processed document telemetry directly into your cloud Supabase database.
-    If the table doesn't exist yet, it automatically constructs it on the fly.
-    """
     try:
         conn = psycopg2.connect(DB_URI)
         cursor = conn.cursor()
-        
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS legal_analytics (
                 id SERIAL PRIMARY KEY,
@@ -38,49 +28,30 @@ def save_transaction_to_db(language, full_response_text):
                 document_snippet TEXT
             );
         """)
-        
         clean_snippet = full_response_text.replace("'", "''")
-        
         cursor.execute("""
             INSERT INTO legal_analytics (target_language, document_snippet)
             VALUES (%s, %s);
         """, (language, clean_snippet[:200] + "..."))
-        
         conn.commit()
         cursor.close()
         conn.close()
-        print("Database transaction successfully committed to Supabase cloud logs.")
+        print("Database transaction successfully committed to Supabase.")
     except Exception as database_error:
         print(f"Database sync safety bypass active: {database_error}")
 
-# --- LOCAL OS ENVIRONMENT CONFIGURATION ---
 if os.name == 'nt':
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-# Mapping structure for all 22 official regional language targets
 LANGUAGE_CONFIG = {
-    "Tamil":     {"native": "தமிழ்"},
-    "Hindi":     {"native": "हिन्दी"},
-    "Telugu":    {"native": "తెలుగు"},
-    "Kannada":   {"native": "ಕನ್ನಡ"},
-    "Malayalam": {"native": "മലയാളം"},
-    "Bengali":   {"native": "বাংলা"},
-    "Marathi":   {"native": "मराठी"},
-    "Gujarati":  {"native": "ગુજરાતી"},
-    "Punjabi":   {"native": "ਪੰਜਾਬੀ"},
-    "Odia":      {"native": "ଓଡ଼ᱤଆ"},
-    "Urdu":      {"native": "اردو"},
-    "Assamese":  {"native": "অसमीया"},
-    "Maithili":  {"native": "मैथिली"},
-    "Sanskrit":  {"native": "संस्कृतम्"},
-    "Kashmiri":  {"native": "کٲशُر"},
-    "Nepali":    {"native": "नेपाली"},
-    "Sindhi":    {"native": "سنڌي"},
-    "Konkani":   {"native": "कोंकणी"},
-    "Manipuri":  {"native": "মৈতৈলোন্"},
-    "Bodo":      {"native": "बर'"},
-    "Dogri":     {"native": "डोगरी"},
-    "Santali":   {"native": "ᱥᱟᱱᱛᱟᱲᱤ"}
+    "Tamil": {"native": "தமிழ்"}, "Hindi": {"native": "हिन्दी"}, "Telugu": {"native": "తెలుగు"},
+    "Kannada": {"native": "ಕನ್ನಡ"}, "Malayalam": {"native": "മലയാളം"}, "Bengali": {"native": "বাংলা"},
+    "Marathi": {"native": "मराठी"}, "Gujarati": {"native": "ગુજરાતી"}, "Punjabi": {"native": "ਪੰਜਾਬੀ"},
+    "Odia": {"native": "ଓଡ଼ିଆ"}, "Urdu": {"native": "اردو"}, "Assamese": {"native": "অसमीയാ"},
+    "Maithili": {"native": "मैथिली"}, "Sanskrit": {"native": "संस्कृतम्"}, "Kashmiri": {"native": "کٲशُر"},
+    "Nepali": {"native": "नेपाली"}, "Sindhi": {"native": "سنڌي"}, "Konkani": {"native": "कोंकणी"},
+    "Manipuri": {"native": "মৈতৈলোন্"}, "Bodo": {"native": "बर'"}, "Dogri": {"native": "डोगरी"},
+    "Santali": {"native": "ᱥᱟᱱᱛᱟᱲᱤ"}
 }
 
 def clean_ai_text(text):
@@ -104,7 +75,6 @@ def get_deterministic_fallback(target_lang):
 def get_ollama_response(prompt, target_lang):
     native_name = LANGUAGE_CONFIG.get(target_lang, {}).get("native", target_lang)
     input_text = prompt[:500]
-    
     try:
         prompt_1 = f"You are a legal assistant. Summarize this legal document text in exactly 3 short, easy bullet points for a villager with no legal knowledge: {input_text}"
         res_1 = ollama.generate(model='gemma2:2b', prompt=prompt_1, options={'temperature': 0.1})
@@ -115,7 +85,6 @@ def get_ollama_response(prompt, target_lang):
         tam = clean_ai_text(res_2.get('response', ''))
 
         return f"ENGLISH SUMMARY:\n{eng}\n\n{target_lang.upper()} SUMMARY:\n{tam}"
-        
     except Exception:
         return get_deterministic_fallback(target_lang)
 
@@ -127,24 +96,16 @@ def index():
 def process():
     if 'file' not in request.files:
         return jsonify({'error': 'No file caught in pipeline'})
-        
     file = request.files['file']
     target_lang = request.form.get('language', 'Tamil')
-    
     try:
-        # IN-MEMORY STREAM HANDLING (Bypasses server filesystem read/write limits)
         img_bytes = file.read()
         img = Image.open(io.BytesIO(img_bytes))
-        
         raw_text = pytesseract.image_to_string(img)
-        
         if len(raw_text.strip()) < 5:
             return jsonify({'summary': "OCR Failed: The text image is too blurry to extract letters properly."})
-            
         summary = get_ollama_response(raw_text, target_lang)
-        
         save_transaction_to_db(target_lang, summary)
-        
         return jsonify({'summary': summary})
     except Exception as e:
         return jsonify({'error': str(e)})
