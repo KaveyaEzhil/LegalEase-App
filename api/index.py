@@ -1,16 +1,22 @@
 import os
 import re
-import io  # Added for in-memory processing
+import io  # Added for safe in-memory file processing
 import pytesseract
 import psycopg2 # type: ignore
 from PIL import Image
 from flask import Flask, render_template, request, jsonify
 import ollama
 
-# Configure Flask to lookup static and template folders from the root directory when running on Vercel
-app = Flask(__name__, 
-            template_folder='../templates', 
-            static_folder='../static')
+# --- ⚡ SMART ENVIRONMENT DETECTION FOR FRONTEND ASSETS ⚡ ---
+# If running on Vercel's cloud production network, look one directory backward (../)
+# If running locally on your laptop workspace, look right inside the current folder path
+if os.environ.get('VERCEL') or 'vercel' in os.getcwd().lower():
+    app = Flask(__name__, template_folder='../templates', static_folder='../static')
+else:
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    app = Flask(__name__, 
+                template_folder=os.path.join(current_directory, 'templates'), 
+                static_folder=os.path.join(current_directory, 'static'))
 
 # --- CLOUD DATABASE CONFIGURATION ---
 DB_URI = "postgresql://postgres:SuperNova75Legalapp@db.fhdngrkozyqdnktxckcy.supabase.co:5432/postgres"
@@ -47,9 +53,7 @@ def save_transaction_to_db(language, full_response_text):
     except Exception as database_error:
         print(f"Database sync safety bypass active: {database_error}")
 
-# --- CLOUD ENVIRONMENT DETECTION ---
-# 📝 FIX 1: REMOVED THE HARDCODED WINDOWS C:\ LINE
-# Only apply the local path constraint if running on your local machine, not on Vercel's Linux server
+# --- LOCAL OS ENVIRONMENT CONFIGURATION ---
 if os.name == 'nt':
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
@@ -64,7 +68,7 @@ LANGUAGE_CONFIG = {
     "Marathi":   {"native": "मराठी"},
     "Gujarati":  {"native": "ગુજરાતી"},
     "Punjabi":   {"native": "ਪੰਜਾਬੀ"},
-    "Odia":      {"native": "ଓଡ଼ିଆ"},
+    "Odia":      {"native": "ଓଡ଼ᱤଆ"},
     "Urdu":      {"native": "اردو"},
     "Assamese":  {"native": "অसमीया"},
     "Maithili":  {"native": "मैथिली"},
@@ -128,9 +132,7 @@ def process():
     target_lang = request.form.get('language', 'Tamil')
     
     try:
-        # 📝 FIX 2: IN-MEMORY BYTES STREAMING
-        # Instead of saving the file locally onto Vercel's read-only file structure,
-        # we parse the multipart file streams straight from the incoming RAM allocation buffer.
+        # IN-MEMORY STREAM HANDLING (Bypasses server filesystem read/write limits)
         img_bytes = file.read()
         img = Image.open(io.BytesIO(img_bytes))
         
