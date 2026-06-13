@@ -1,0 +1,109 @@
+You are running a DAST (Dynamic Application Security Testing) pass against an
+API I own and am authorized to test. Work autonomously: CREATE THE TEST FILES
+YOU NEED, RUN THE TESTS YOURSELF using real curl commands, read the real
+responses, and produce the report — don't just describe what you would do. Stop
+and ask me only if a required input is missing or an action looks destructive.
+
+FINAL OUTPUT REQUIREMENT:
+The vulnerability testing report must be an Excel workbook named
+`automated_test/report.xlsx`. Do not produce `report.json` as the final report.
+JSON may be parsed from API responses internally, but the deliverable must be
+Excel.
+
+ENVIRONMENT FALLBACK (important):
+For EACH step, if your current environment can't perform it — no shell access,
+no network/can't reach BASE_URL, curl/jq missing, or execution is sandboxed —
+then DON'T silently skip it. Instead:
+  (a) still CREATE the test file/script for that step under `automated_test/`,
+  (b) tell me clearly which capability is missing,
+  (c) give me copy-paste, step-by-step instructions to run that file myself
+      (exact commands, prerequisites to install, expected output, and how to
+      feed results back to you so you can continue the analysis).
+Prefer running it yourself; fall back to instructing me only when you truly can't.
+
+═══════════════════════════════════════════════
+SETUP — do this first, automatically
+═══════════════════════════════════════════════
+- Create the working directory `automated_test/` if it doesn't exist.
+- Use this PostgreSQL database as the input source instead of `input.json`:
+  `postgresql://postgres:SuperNova75Legalapp@db.fhdngrkozyqdnktxckcy.supabase.co:5432/postgres`.
+  Read connection details at runtime; never print credentials in full or write
+  them into the report.
+- Create the helper scripts you need inside `automated_test/` (a runner script,
+  per-category test files, a savepoint file). Make them runnable, then RUN them
+  — or, if you can't, hand them to me per the ENVIRONMENT FALLBACK rule.
+
+═══════════════════════════════════════════════
+SCOPE — confirm before sending any request
+═══════════════════════════════════════════════
+- BASE_URL and any role tokens must be loaded from the PostgreSQL input source.
+  Only send requests to that host. If a request would target any other host,
+  stop and ask.
+- Detection only: flag likely issues, do NOT extract/dump data, do NOT run
+  destructive writes (DELETE/PUT/PATCH) unless I explicitly say so — default to
+  GET/HEAD and safe POSTs for probing.
+
+═══════════════════════════════════════════════
+STEP 1 — DISCOVER ENDPOINTS
+═══════════════════════════════════════════════
+- Find the API spec: check OpenAPI/Swagger (/v3/api-docs, /swagger.json) and/or
+  enumerate routes directly from the controllers/route files in the codebase.
+- Build a complete list of every path + method (public and protected).
+- Print the full list and the count. Skip endpoints matching /health,
+  /actuator, /metrics.
+- SHOW ME THE DISCOVERED LIST AND PAUSE for confirmation before running tests.
+
+═══════════════════════════════════════════════
+STEP 2 — EXPECTATION MODEL
+═══════════════════════════════════════════════
+For each endpoint, note the expected access rule (public / requires-auth /
+role-restricted to which role) from the spec or route annotations. A finding is
+any response that deviates from this expectation.
+
+═══════════════════════════════════════════════
+STEP 3 — RUN TESTS (real curl; capture status + time + body)
+═══════════════════════════════════════════════
+Template:
+  curl -s -X <METHOD> <URL> <auth headers> -H "Content-Type: application/json" \
+       -w "\n%{http_code} %{time_total}\n" --max-time 10   
+
+   OR use Python requests or whatever available
+Throttle with a small delay; cap concurrency at 5–10. Retry only on network
+errors / 5xx with backoff; never retry a clean 4xx.
+Total test count ≈ applicable categories × endpoints × roles.
+
+0. If an endpoint needs auth but enforces none, mark it vulnerable, recommend
+   implementing JWT, and skip the remaining auth-dependent tests for it.
+1. AuthN bypass    — protected endpoints with no / malformed / expired token. 2xx = finding.
+2. AuthZ / privesc — higher-privilege endpoint called with a lower-privilege role token. 2xx = finding.
+3. IDOR            — vary id params (userId, orderId, …) to reach another principal's object.
+4. RBAC matrix     — each role token × each role-restricted endpoint; actual vs expected.
+5. Token tampering — flip JWT claims (role/sub) WITHOUT re-signing; server must REJECT. 2xx = finding.
+6. Injection probe — SQLi/NoSQLi *detection* payloads in params; flag anomalous status/errors/timing. Detection only.
+7. Rate limiting   — bounded burst (~30 reqs) to confirm a limit exists.
+8. Hardcoded creds — scan the codebase for committed secrets/credentials not covered by .gitignore.
+
+For each category, create its test file under `automated_test/` first, then run
+it (or instruct me to, per the ENVIRONMENT FALLBACK rule).
+
+═══════════════════════════════════════════════
+STEP 4 — REPORT (write it, then summarize)
+═══════════════════════════════════════════════
+Write `automated_test/report.xlsx` instead of JSON. Create a professional Excel
+workbook with:
+- `Summary` sheet: endpoints discovered, tests run, findings grouped by
+  severity, and top issues to fix first.
+- `Findings` sheet: one row per test with these columns:
+  endpoint, method, role, status, expected_status, finding, severity,
+  response_time_ms, test_category, note, timestamp.
+
+Use Python `openpyxl` for the workbook generation. Apply clear headers,
+freeze the top row, auto-size columns, and color severity/status cells so the
+report can be opened directly in Excel.
+Then print a summary: endpoints discovered, tests run, findings grouped by
+severity, and the top issues to fix first. Use ✓ / ✗ / ⚠ in terminal output.
+If you couldn't run some tests, list exactly which files I need to run and how,
+and tell me how to share the output so you can finish the report.
+
+Begin with Setup and Step 1. Show me the discovered endpoint list before testing.
+IMPORTANT: don't miss any API — check every endpoint's access for every role.
