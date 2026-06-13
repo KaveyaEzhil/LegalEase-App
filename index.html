@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalEase | Simple Legal Help in Your Language</title>
+    <meta name="description" content="LegalEase uses AI to scan legal documents and explain them in plain language across all 22 official Indian languages.">
+    <link rel="manifest" href="./static/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #0f172a;
+            --legal-green: #059669;
+            --legal-green-hover: #047857;
+            --legal-green-light: #d1fae5;
+            --legal-light-bg: #ecfdf5;
+            --bg-canvas: #f0f4f8;
+            --surface-card: rgba(255, 255, 255, 0.97);
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.10);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background:
+                linear-gradient(135deg, rgba(5,150,105,0.04) 0%, rgba(15,23,42,0.06) 100%),
+                url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=1920') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: var(--primary-dark);
+            color: white;
+            padding: 0 2rem;
+            height: 64px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+        .brand {
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .brand-icon { font-size: 1.3rem; }
+        .brand span { color: var(--legal-green); }
+
+        .nav-links { display: flex; gap: 0.4rem; list-style: none; }
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .nav-links a:hover { color: white; background: rgba(255,255,255,0.08); }
+        .nav-links a.active { color: white; background: var(--legal-green); }
+
+        /* ── Hero Banner ── */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1e3a2f 100%);
+            color: white;
+            padding: 3rem 2rem 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '⚖️';
+            position: absolute;
+            font-size: 18rem;
+            opacity: 0.03;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        .hero h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 0.75rem;
+        }
+        .hero h1 em { color: var(--legal-green); font-style: normal; }
+        .hero p {
+            color: #94a3b8;
+            font-size: 1.05rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .lang-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.4rem;
+            margin-top: 1.5rem;
+        }
+        .lang-pill {
+            background: rgba(5,150,105,0.15);
+            border: 1px solid rgba(5,150,105,0.3);
+            color: #6ee7b7;
+            padding: 0.2rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+
+        /* ── Layout ── */
+        .dashboard-container {
+            flex: 1;
+            width: 100%;
+            max-width: 1280px;
+            padding: 2rem;
+            margin: 0 auto;
+        }
+
+        .app-page { display: none; width: 100%; }
+        .app-page.active-page { display: block; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        .split-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.75rem;
+            width: 100%;
+            align-items: start;
+        }
+
+        /* ── Cards ── */
+        .portal-card {
+            background: var(--surface-card);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+        }
+        .page-header { margin-bottom: 1.5rem; }
+        .page-header h2 { font-size: 1.5rem; color: var(--primary-dark); margin-bottom: 0.35rem; font-weight: 700; }
+        .page-header p { color: var(--text-light); font-size: 0.93rem; }
+
+        /* ── Widgets ── */
+        .widgets-column { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .widget-box {
+            background: var(--surface-card);
+            border-radius: 14px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+        }
+        .widget-box::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--legal-green), #34d399);
+            border-radius: 4px 0 0 4px;
+        }
+        .widget-title { font-size: 0.8rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.06em; }
+        .widget-value { font-size: 2.2rem; font-weight: 800; color: var(--primary-dark); margin-top: 0.3rem; letter-spacing: -0.03em; }
+
+        /* ── Form ── */
+        .input-group { margin-bottom: 1.25rem; text-align: left; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem; color: var(--text-main); }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            outline: none;
+            background: #f8fafc;
+            color: var(--text-main);
+        }
+        .form-control:focus { border-color: var(--legal-green); box-shadow: 0 0 0 3px rgba(5,150,105,0.12); background: white; }
+
+        /* ── File Drop Zone ── */
+        .file-drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8fafc;
+            position: relative;
+        }
+        .file-drop-zone:hover, .file-drop-zone.dragover {
+            border-color: var(--legal-green);
+            background: var(--legal-light-bg);
+        }
+        .file-drop-zone input[type="file"] {
+            position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+        }
+        .drop-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .drop-label { font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
+        .drop-sub { font-size: 0.82rem; color: var(--text-light); margin-top: 0.25rem; }
+
+        /* ── Buttons ── */
+        .btn {
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--legal-green), #10b981); color: white; box-shadow: 0 4px 12px rgba(5,150,105,0.25); }
+        .btn-primary:hover { background: linear-gradient(135deg, var(--legal-green-hover), #059669); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(5,150,105,0.35); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-secondary { background: #334155; color: white; }
+        .btn-secondary:hover { background: #1e293b; transform: translateY(-1px); }
+
+        /* ── Loader ── */
+        .loader-wrapper { display: none; margin: 1.5rem 0; text-align: center; }
+        .spinner {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid var(--legal-green);
+            border-radius: 50%;
+            width: 38px; height: 38px;
+            animation: spin 0.75s linear infinite;
+            margin: 0 auto 0.75rem;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-text { color: var(--text-light); font-size: 0.9rem; font-weight: 500; }
+
+        /* ── Preview Box ── */
+        .preview-box {
+            width: 100%;
+            height: 280px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-light);
+            background: rgba(248,250,252,0.9);
+            font-size: 0.9rem;
+            overflow: hidden;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .preview-empty-icon { font-size: 2.5rem; opacity: 0.4; }
+
+        /* ── Results ── */
+        .meta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--legal-light-bg);
+            color: var(--legal-green);
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            border: 1px solid #a7f3d0;
+        }
+        .output-block {
+            background: #fafafa;
+            border-left: 5px solid var(--legal-green);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 1.5rem;
+            white-space: pre-line;
+            font-size: 1rem;
+            color: #1e293b;
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            min-height: 200px;
+            line-height: 1.8;
+        }
+
+        /* ── History Table ── */
+        .table-responsive {
+            background: var(--surface-card);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+        .history-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .history-table th {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            font-size: 0.78rem;
+            color: var(--text-light);
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .history-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.92rem;
+        }
+        .history-table tr:last-child td { border-bottom: none; }
+        .status-pill {
+            display: inline-block;
+            padding: 0.2rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: var(--legal-light-bg);
+            color: var(--legal-green);
+        }
+
+        /* ── Alert Banner ── */
+        .alert-banner {
+            background: linear-gradient(135deg, #0f172a, #1e3a5f);
+            border: 1px solid #3b82f6;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: #bfdbfe;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .alert-banner .alert-icon { font-size: 1.2rem; flex-shrink: 0; }
+        .alert-banner strong { color: #93c5fd; }
+        .alert-banner a { color: #60a5fa; }
+
+        /* ── Footer ── */
+        .footer {
+            background: var(--primary-dark);
+            color: #475569;
+            text-align: center;
+            padding: 1.25rem;
+            font-size: 0.82rem;
+            border-top: 1px solid #1e293b;
+        }
+        .footer a { color: var(--legal-green); text-decoration: none; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .split-grid { grid-template-columns: 1fr; }
+            .widgets-column { grid-template-columns: 1fr 1fr; }
+            .hero h1 { font-size: 1.7rem; }
+            .nav-links a { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+            .dashboard-container { padding: 1rem; }
+        }
+
+        @media print {
+            .navbar, .btn, .meta-badge, .widget-box, .preview-box, .hero { display: none !important; }
+            body { background: white; }
+            .split-grid { grid-template-columns: 1fr; }
+            .output-block { border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand">
+            <span class="brand-icon">⚖️</span>
+            Legal<span>Ease</span>
+        </div>
+        <ul class="nav-links">
+            <li><a id="link-scan" class="active" onclick="switchPage('page-scan')">📄 Scan Document</a></li>
+            <li><a id="link-results" onclick="switchPage('page-results')">💡 See Explanation</a></li>
+            <li><a id="link-history" onclick="switchPage('page-history')">📋 History Logs</a></li>
+        </ul>
+    </nav>
+
+    <div class="hero">
+        <h1>Legal Documents Made <em>Simple</em></h1>
+        <p>Upload any official or legal document — our AI reads it and explains it in plain language in your own regional language.</p>
+        <div class="lang-pills">
+            <span class="lang-pill">தமிழ்</span>
+            <span class="lang-pill">हिन्दी</span>
+            <span class="lang-pill">తెలుగు</span>
+            <span class="lang-pill">ಕನ್ನಡ</span>
+            <span class="lang-pill">മലയാളം</span>
+            <span class="lang-pill">বাংলা</span>
+            <span class="lang-pill">मराठी</span>
+            <span class="lang-pill">ગુજરાતી</span>
+            <span class="lang-pill">ਪੰਜਾਬੀ</span>
+            <span class="lang-pill">اردو</span>
+            <span class="lang-pill">+12 more</span>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+
+        <!-- PAGE: SCAN -->
+        <section id="page-scan" class="app-page active-page">
+            <div class="split-grid">
+
+                <div class="portal-card">
+                    <div class="page-header">
+                        <h2>📄 Document Reader</h2>
+                        <p>Upload a photo or scan of your official or legal paper to get a clear explanation</p>
+                    </div>
+
+                    <div class="alert-banner">
+                        <span class="alert-icon">ℹ️</span>
+                        <div>
+                            <strong>Backend Required:</strong> Document processing needs the Python/Flask API running.
+                            Deploy the backend to <a href="https://vercel.com" target="_blank">Vercel</a> and update the API URL in the source, or run <code>python web/index.py</code> locally.
+                            <a href="https://github.com/KaveyaEzhil/LegalEase-App" target="_blank">View source →</a>
+                        </div>
+                    </div>
+
+                    <form id="upload-form">
+                        <div class="input-group">
+                            <label for="file">Select or Take a Picture of Your Document</label>
+                            <div class="file-drop-zone" id="drop-zone">
+                                <input type="file" id="file" name="file" accept="image/*" capture="camera" required onchange="previewFile(this)">
+                                <div class="drop-icon">📎</div>
+                                <div class="drop-label">Click to upload or drag & drop</div>
+                                <div class="drop-sub">Supports JPG, PNG, PDF images • Max 10MB</div>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="lang">Choose Your Language</label>
+                            <select id="lang" name="language" class="form-control">
+                                <option value="Tamil">Tamil (தமிழ்)</option>
+                                <option value="Hindi">Hindi (हिन्दी)</option>
+                                <option value="Telugu">Telugu (తెలుగు)</option>
+                                <option value="Bengali">Bengali (বাংলা)</option>
+                                <option value="Marathi">Marathi (मराठी)</option>
+                                <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                                <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                                <option value="Malayalam">Malayalam (മലയാളം)</option>
+                                <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                                <option value="Assamese">Assamese (অসমীয়া)</option>
+                                <option value="Odia">Odia (ଓଡ଼ିଆ)</option>
+                                <option value="Kashmiri">Kashmiri (کٲشُر)</option>
+                                <option value="Sanskrit">Sanskrit (संस्कृतम्)</option>
+                                <option value="Urdu">Urdu (اردو)</option>
+                                <option value="Nepali">Nepali (नेपाली)</option>
+                                <option value="Konkani">Konkani (कोंकणी)</option>
+                                <option value="Manipuri">Manipuri (মৈতৈলোন্)</option>
+                                <option value="Sindhi">Sindhi (سنڌي)</option>
+                                <option value="Bodo">Bodo (बर')</option>
+                                <option value="Dogri">Dogri (डोगरी)</option>
+                                <option value="Maithili">Maithili (मैथिली)</option>
+                                <option value="Santali">Santali (ᱥᱟᱱᱛᱟᱲᱤ)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="btn btn-primary">
+                            🔍 Read &amp; Explain My Document
+                        </button>
+                    </form>
+
+                    <div class="loader-wrapper" id="loader">
+                        <div class="spinner"></div>
+                        <p class="loader-text">AI is reading your document... please wait</p>
+                    </div>
+                </div>
+
+                <div class="widgets-column">
+                    <div class="widget-box" style="grid-column: span 2;">
+                        <div class="widget-title" style="margin-bottom: 0.75rem;">📷 Your Uploaded Document</div>
+                        <div class="preview-box" id="document-preview-frame">
+                            <span class="preview-empty-icon">🖼️</span>
+                            <span>No picture selected yet</span>
+                        </div>
+                    </div>
+                    <div class="widget-box">
+                        <div class="widget-title">Documents Scanned</div>
+                        <div class="widget-value" id="stat-scans">0</div>
+                    </div>
+                    <div class="widget-box">
+                        <div class="widget-title">Voice Help Used</div>
+                        <div class="widget-value" id="stat-audio">0</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- PAGE: RESULTS -->
+        <section id="page-results" class="app-page">
+            <div class="split-grid">
+
+                <div class="portal-card">
+                    <div class="widget-title" style="margin-bottom: 0.75rem;">📄 Your Document Copy</div>
+                    <div class="preview-box" id="result-side-preview" style="height: 420px;">
+                        <span class="preview-empty-icon">🖼️</span>
+                        <span>No document uploaded yet</span>
+                    </div>
+                </div>
+
+                <div class="portal-card">
+                    <span class="meta-badge" id="report-lang-badge">🌐 Selected Language: None</span>
+                    <h2 style="color: var(--primary-dark); margin-bottom: 1rem; font-size: 1.4rem;">💡 Simple Explanation</h2>
+                    <div id="summaryText" class="output-block">No text processed yet. Please go to the Scan tab and upload a document image.</div>
+                    <button type="button" class="btn btn-primary" onclick="speak()">🔊 Read Out Loud (Voice Help)</button>
+                    <button type="button" class="btn btn-secondary" onclick="window.print()">📥 Download / Print Page</button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- PAGE: HISTORY -->
+        <section id="page-history" class="app-page">
+            <div class="page-header" style="text-align: left; margin-bottom: 1.5rem;">
+                <h2>📋 Past Search Records</h2>
+                <p>Documents you have processed in this browser session</p>
+            </div>
+            <div class="table-responsive">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date &amp; Time</th>
+                            <th>Language</th>
+                            <th>Text Preview</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-log-rows"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="footer">
+        LegalEase — AI Legal Translation for India &nbsp;|&nbsp;
+        <a href="https://github.com/KaveyaEzhil/LegalEase-App" target="_blank">GitHub Repository</a>
+    </footer>
+
+    <script>
+        // ── Config ──────────────────────────────────────────────────────────
+        // If you deploy the Flask backend to Vercel, set your deployment URL here:
+        const API_BASE_URL = window.location.origin;
+        // Example: const API_BASE_URL = 'https://your-app.vercel.app';
+
+        // ── State ────────────────────────────────────────────────────────────
+        let scanCounter = parseInt(localStorage.getItem('totalScansMetric') || "0");
+        let audioCounter = parseInt(localStorage.getItem('totalAudioMetric') || "0");
+
+        function updateDashboardMetrics() {
+            document.getElementById('stat-scans').innerText = scanCounter;
+            document.getElementById('stat-audio').innerText = audioCounter;
+        }
+
+        // ── File Preview ─────────────────────────────────────────────────────
+        function previewFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Update drop zone label
+            document.querySelector('.drop-label').innerText = `✅ ${file.name}`;
+            document.querySelector('.drop-icon').innerText = '📄';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgHTML = `<img src="${e.target.result}" alt="Document Copy">`;
+                document.getElementById('document-preview-frame').innerHTML = imgHTML;
+                document.getElementById('result-side-preview').innerHTML = imgHTML;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Drag-and-drop highlight
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const fileInput = document.getElementById('file');
+            fileInput.files = e.dataTransfer.files;
+            previewFile(fileInput);
+        });
+
+        // ── Page Navigation ───────────────────────────────────────────────────
+        function switchPage(pageId) {
+            document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active-page'));
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active-page');
+            const linkMap = { 'page-scan': 'link-scan', 'page-results': 'link-results', 'page-history': 'link-history' };
+            document.getElementById(linkMap[pageId]).classList.add('active');
+        }
+
+        // ── History Table ─────────────────────────────────────────────────────
+        function renderLedgerDataRows() {
+            const logs = JSON.parse(localStorage.getItem('legalAuditLog') || "[]");
+            const tbody = document.getElementById('history-log-rows');
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-light);padding:2rem;">No past documents saved yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${log.timestamp}</td>
+                    <td><strong>${log.lang}</strong></td>
+                    <td style="color:var(--text-light);max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${log.snippet}</td>
+                    <td><span class="status-pill">✅ Saved</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // ── Form Submit ───────────────────────────────────────────────────────
+        document.getElementById('upload-form').onsubmit = async (e) => {
+            e.preventDefault();
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('submit-btn').disabled = true;
+
+            const formData = new FormData(e.target);
+            const chosenLang = document.getElementById('lang').value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/process`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.summary) {
+                    document.getElementById('summaryText').innerText = data.summary;
+                    document.getElementById('report-lang-badge').innerText = `🌐 Selected Language: ${chosenLang}`;
+
+                    scanCounter += 1;
+                    localStorage.setItem('totalScansMetric', scanCounter);
+
+                    const logMem = JSON.parse(localStorage.getItem('legalAuditLog') || "[]");
+                    logMem.unshift({
+                        timestamp: new Date().toLocaleString(),
+                        lang: chosenLang,
+                        snippet: data.summary.substring(0, 90) + "..."
+                    });
+                    localStorage.setItem('legalAuditLog', JSON.stringify(logMem));
+
+                    updateDashboardMetrics();
+                    renderLedgerDataRows();
+                    switchPage('page-results');
+                } else if (data.error) {
+                    alert("Error processing document: " + data.error);
+                }
+            } catch (err) {
+                alert("⚠️ Cannot reach the backend API.\n\nThis GitHub Pages site hosts only the frontend UI. To process documents, the Python/Flask backend must be running.\n\n• Run locally: python web/index.py\n• Or deploy to Vercel and set API_BASE_URL in the script.");
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('submit-btn').disabled = false;
+            }
+        };
+
+        // ── Voice / Speech ────────────────────────────────────────────────────
+        function speak() {
+            window.speechSynthesis.cancel();
+            let text = document.getElementById('summaryText').innerText;
+            if (!text || text.startsWith("No text")) return;
+
+            text = text.replace(/\[Processing complete.*?\]/g, "")
+                       .replace(/Enforcing localized.*?\]/g, "").trim();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            const langISO = {
+                'Tamil':'ta-IN','Hindi':'hi-IN','Telugu':'te-IN','Bengali':'bn-IN',
+                'Marathi':'mr-IN','Gujarati':'gu-IN','Kannada':'kn-IN','Malayalam':'ml-IN',
+                'Punjabi':'pa-IN','Assamese':'as-IN','Odia':'or-IN','Kashmiri':'ks-IN',
+                'Sanskrit':'sa-IN','Urdu':'ur-IN','Nepali':'ne-NP','Konkani':'kok-IN',
+                'Manipuri':'mni-IN','Sindhi':'sd-IN','Bodo':'brx-IN','Dogri':'doi-IN',
+                'Maithili':'mai-IN','Santali':'sat-IN'
+            };
+            const isoCode = langISO[document.getElementById('lang').value] || 'en-US';
+            utterance.lang = isoCode;
+            utterance.rate = 0.9;
+
+            if ('speechSynthesis' in window) {
+                const voices = window.speechSynthesis.getVoices();
+                const match = voices.find(v => v.lang.toLowerCase().startsWith(isoCode.substring(0, 2)));
+                if (match) utterance.voice = match;
+            }
+
+            audioCounter += 1;
+            localStorage.setItem('totalAudioMetric', audioCounter);
+            updateDashboardMetrics();
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // ── Init ──────────────────────────────────────────────────────────────
+        window.onload = () => {
+            updateDashboardMetrics();
+            renderLedgerDataRows();
+        };
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+    </script>
+</body>
+</html>
