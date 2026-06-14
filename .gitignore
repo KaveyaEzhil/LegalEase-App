@@ -1,0 +1,56 @@
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# ── Environment / Secrets ────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.env
+
+# ── Node / npm ───────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ── Vercel ───────────────────────────────────────────────────────────────────
+.vercel/
+
+# ── Generated / Large media files ───────────────────────────────────────────
+web/static/speech_output.wav
+*.wav
+*.mp3
+
+# ── Test report spreadsheets (auto-generated) ────────────────────────────────
+web/E2E_Test_Report_*.xlsx
+E2E_Test_Report_*.xlsx
+
+# ── OS artefacts ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDEs ─────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
+~/
+~$*

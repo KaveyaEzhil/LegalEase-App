@@ -1,0 +1,10 @@
+{
+  "appId": "com.legalease.app",
+  "appName": "LegalEase",
+  "webDir": "static",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://legal-ease-app-pied.vercel.app",
+    "cleartext": true
+  }
+}
