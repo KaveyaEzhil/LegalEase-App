@@ -129,6 +129,29 @@ To enable real-time automatic synchronization from your local computer to GitHub
 - **Excel Spreadsheet Files** (`.xlsx`, `.xls`, `.csv`) are fully tracked so that test execution results and vulnerability scan results are saved in history.
 - Large binary artifacts, local database files (`*.db`), OS artifacts (e.g., `.DS_Store`), and dependency directories (`node_modules/`, `.venv/`) are excluded via `.gitignore`.
 
+
+---
+
+## 📱 Mobile Appium E2E Testing
+
+This project includes a comprehensive Appium mobile testing suite located in the [appium_node_tests/](file:///c:/legalease_project/appium_node_tests) folder. It automates testing the Android mobile wrapper (`com.legalease.app`) across 11 quality verification categories and generates detailed Excel reports.
+
+### Quick Run:
+1. Navigate to the Appium folder:
+   ```bash
+   cd appium_node_tests
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run in **Simulation Mode** (requires no device/Appium setup; instantly generates a mock Excel report representing the E2E verification):
+   ```bash
+   npm run test:mobile
+   ```
+
+To run against a live USB-connected Android device or emulator, see the setup guide in [appium_node_tests/README.md](file:///c:/legalease_project/appium_node_tests/README.md).
+
 ---
 
 ## 📄 License
