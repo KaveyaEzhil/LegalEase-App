@@ -180,12 +180,21 @@ def main():
     
     # 1. Start the Flask server in background
     print("Starting Flask application server on localhost:8080...")
+    import os
+    env = os.environ.copy()
+    parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    if 'PYTHONPATH' in env:
+        env['PYTHONPATH'] = parent_dir + os.pathsep + env['PYTHONPATH']
+    else:
+        env['PYTHONPATH'] = parent_dir
+    env['MOCK_OLLAMA'] = 'true'
     flask_process = subprocess.Popen(
         [sys.executable, 'index.py'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
-        bufsize=1
+        bufsize=1,
+        env=env
     )
     
     # 2. Wait for server port to open

@@ -5,3 +5,4 @@ selenium==4.27.1
 flask
 pillow
 gunicorn
+SQLAlchemy==2.0.19

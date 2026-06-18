@@ -1,8 +1,12 @@
+import sys
 import os
+# Allow importing from parent directory
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import re
 import io
 import pytesseract
-import psycopg2 # type: ignore
+from backend.db import init_db, save_transaction_to_db
 from PIL import Image
 from flask import Flask, render_template, request, jsonify
 import ollama
@@ -13,32 +17,8 @@ template_dir = os.path.abspath(os.path.join(base_dir, '..', '..', 'frontend', 't
 static_dir = os.path.abspath(os.path.join(base_dir, '..', '..', 'frontend', 'static'))
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
-# --- CLOUD DATABASE CONFIGURATION ---
-DB_URI = "postgresql://postgres:SuperNova75Legalapp@db.fhdngrkozyqdnktxckcy.supabase.co:5432/postgres"
-
-def save_transaction_to_db(language, full_response_text):
-    try:
-        conn = psycopg2.connect(DB_URI)
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS legal_analytics (
-                id SERIAL PRIMARY KEY,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                target_language TEXT,
-                document_snippet TEXT
-            );
-        """)
-        clean_snippet = full_response_text.replace("'", "''")
-        cursor.execute("""
-            INSERT INTO legal_analytics (target_language, document_snippet)
-            VALUES (%s, %s);
-        """, (language, clean_snippet[:200] + "..."))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        print("Database transaction successfully committed to Supabase.")
-    except Exception as database_error:
-        print(f"Database sync safety bypass active: {database_error}")
+# Initialize database (creates tables if missing)
+init_db()
 
 if os.name == 'nt':
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -46,8 +26,8 @@ if os.name == 'nt':
 LANGUAGE_CONFIG = {
     "Tamil": {"native": "தமிழ்"}, "Hindi": {"native": "हिन्दी"}, "Telugu": {"native": "తెలుగు"},
     "Kannada": {"native": "ಕನ್ನಡ"}, "Malayalam": {"native": "മലയാളം"}, "Bengali": {"native": "বাংলা"},
-    "Marathi": {"native": "मराठी"}, "Gujarati": {"native": "ગુજરાતી"}, "Punjabi": {"native": "ਪੰਜਾਬੀ"},
-    "Odia": {"native": "ଓଡ଼ିଆ"}, "Urdu": {"native": "اردو"}, "Assamese": {"native": "অसमीയാ"},
+    "Marathi": {"native": "மराठी"}, "Gujarati": {"native": "ગુજરાતી"}, "Punjabi": {"native": "ਪੰਜਾਬੀ"},
+    "Odia": {"native": "ଓଡ଼ିଆ"}, "Urdu": {"native": "اردو"}, "Assamese": {"native": "অसमीया"},
     "Maithili": {"native": "मैथिली"}, "Sanskrit": {"native": "संस्कृतम्"}, "Kashmiri": {"native": "کٲशُر"},
     "Nepali": {"native": "नेपाली"}, "Sindhi": {"native": "سنڌي"}, "Konkani": {"native": "कोंकणी"},
     "Manipuri": {"native": "মৈতৈলোন্"}, "Bodo": {"native": "बर'"}, "Dogri": {"native": "डोगरी"},
@@ -73,6 +53,8 @@ def get_deterministic_fallback(target_lang):
     )
 
 def get_ollama_response(prompt, target_lang):
+    if os.environ.get("MOCK_OLLAMA") == "true":
+        return get_deterministic_fallback(target_lang)
     native_name = LANGUAGE_CONFIG.get(target_lang, {}).get("native", target_lang)
     input_text = prompt[:500]
     try:
@@ -105,7 +87,7 @@ def process():
         if len(raw_text.strip()) < 5:
             return jsonify({'summary': "OCR Failed: The text image is too blurry to extract letters properly."})
         summary = get_ollama_response(raw_text, target_lang)
-        save_transaction_to_db(target_lang, summary)
+        save_transaction_to_db(target_lang, summary, document_filename=file.filename, raw_text=raw_text)
         return jsonify({'summary': summary})
     except Exception as e:
         return jsonify({'error': str(e)})

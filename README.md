@@ -88,8 +88,50 @@ The `web/vercel.json` is pre-configured for Vercel Python serverless deployment.
 - **Mobile:** Capacitor (Android)
 - **Deployment:** Vercel
 
+
+---
+
+## 🤖 GitHub Integration & Automation
+
+This project is configured with a fully automated setup to track files, sync local changes, and run tests via GitHub Actions.
+
+### 1. GitHub Actions (CI & Auto-Commit)
+A GitHub Actions workflow is configured at [.github/workflows/ci.yml](file:///c:/legalease_project/.github/workflows/ci.yml).
+- **Triggers**: Runs automatically on every push or pull request to the `master` or `main` branches.
+- **Tasks**:
+  1. Sets up the Python environment.
+  2. Installs required dependencies from both `web/requirements.txt` and `backend/requirements.txt`.
+  3. Runs Python unit tests.
+  4. Automatically detects and commits back any modified or newly generated files (e.g., test reports, database assets) to the active branch.
+
+### 2. Local Sync Watcher Service
+To enable real-time automatic synchronization from your local computer to GitHub:
+- We have provided a PowerShell file watcher script: [watch_and_sync.ps1](file:///c:/legalease_project/scripts/watch_and_sync.ps1).
+- This script monitors all project files (including spreadsheets like `.xlsx`, `.xls`, and `.csv` files) in real-time.
+- When it detects edits, creation, or deletion of files, it waits for **5 seconds** (debouncing) and then automatically runs:
+  ```powershell
+  git add -A
+  git commit -m "Auto-sync: local updates [skip ci]"
+  git push origin <branch_name>
+  ```
+
+#### How to start the Local Watcher:
+1. Open a PowerShell terminal.
+2. Navigate to the project root directory.
+3. Run the script:
+   ```powershell
+   ./scripts/watch_and_sync.ps1
+   ```
+4. Keep the terminal window open. The script will run in the background and keep your repository fully synchronized.
+
+### 3. File Tracking Rules
+- All source code and test files are included in version control.
+- **Excel Spreadsheet Files** (`.xlsx`, `.xls`, `.csv`) are fully tracked so that test execution results and vulnerability scan results are saved in history.
+- Large binary artifacts, local database files (`*.db`), OS artifacts (e.g., `.DS_Store`), and dependency directories (`node_modules/`, `.venv/`) are excluded via `.gitignore`.
+
 ---
 
 ## 📄 License
 
 MIT License — see [LICENSE](LICENSE) for details.
+

@@ -1,7 +1,11 @@
+import sys
 import os
+# Allow importing from parent directory
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import re
 import pytesseract
-import psycopg2
+from backend.db import init_db, save_transaction_to_db
 from PIL import Image
 from flask import Flask, render_template, request, jsonify
 # Importing the official native library to bypass Windows HTTP port errors
@@ -15,49 +19,8 @@ app = Flask(__name__,
             template_folder=template_dir, 
             static_folder=static_dir)
 
-# --- CLOUD DATABASE CONFIGURATION ---
-# Replace 'YOUR_ACTUAL_PASSWORD' inside the URI with your private Supabase account password!
-DB_URI = os.environ.get(
-    "DATABASE_URL",
-    "postgresql://postgres:CHANGE_ME@db.fhdngrkozyqdnktxckcy.supabase.co:5432/postgres"
-)
-
-def save_transaction_to_db(language, full_response_text):
-    """
-    Inserts processed document telemetry directly into your cloud Supabase database.
-    If the table doesn't exist yet, it automatically constructs it on the fly.
-    """
-    try:
-        # Establish link to your live Mumbai PostgreSQL instance
-        conn = psycopg2.connect(DB_URI)
-        cursor = conn.cursor()
-        
-        # Enforce table structure on the fly
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS legal_analytics (
-                id SERIAL PRIMARY KEY,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                target_language TEXT,
-                document_snippet TEXT
-            );
-        """)
-        
-        # Safe string cleaning to prevent SQL tracking breaks
-        clean_snippet = full_response_text.replace("'", "''")
-        
-        # Insert the live incoming test data record from the examiner's device
-        cursor.execute("""
-            INSERT INTO legal_analytics (target_language, document_snippet)
-            VALUES (%s, %s);
-        """, (language, clean_snippet[:200] + "..."))
-        
-        conn.commit()
-        cursor.close()
-        conn.close()
-        print("Database transaction successfully committed to Supabase cloud logs.")
-    except Exception as database_error:
-        # Prevents the entire app from crashing if the database password was typed wrong during a live presentation
-        print(f"Database sync safety bypass active: {database_error}")
+# Initialize database (creates tables if missing)
+init_db()
 
 # --- LOCAL CONFIGURATION ---
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -70,7 +33,7 @@ LANGUAGE_CONFIG = {
     "Kannada":   {"native": "ಕನ್ನಡ"},
     "Malayalam": {"native": "മലയാളം"},
     "Bengali":   {"native": "বাংলা"},
-    "Marathi":   {"native": "मराठी"},
+    "Marathi":   {"native": "மराठी"},
     "Gujarati":  {"native": "ગુજરાતી"},
     "Punjabi":   {"native": "ਪੰਜਾਬੀ"},
     "Odia":      {"native": "ଓଡ଼ିଆ"},
@@ -108,6 +71,8 @@ def get_deterministic_fallback(target_lang):
     )
 
 def get_ollama_response(prompt, target_lang):
+    if os.environ.get("MOCK_OLLAMA") == "true":
+        return get_deterministic_fallback(target_lang)
     native_name = LANGUAGE_CONFIG.get(target_lang, {}).get("native", target_lang)
     input_text = prompt[:500] # Safe text limit for fast processing
     
@@ -151,7 +116,7 @@ def process():
         
         # ⚡ LIVE CLOUD DATABASE INJECTION LOGIC ⚡
         # This will pipe the result into Supabase right when the examiners hit process on their laptops!
-        save_transaction_to_db(target_lang, summary)
+        save_transaction_to_db(target_lang, summary, document_filename=file.filename, raw_text=raw_text)
         
         return jsonify({'summary': summary})
     except Exception as e:

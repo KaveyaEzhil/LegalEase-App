@@ -1,0 +1,17 @@
+{
+  "name": "legalease-selenium-tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "e2e": "node run_e2e.js"
+  },
+  "dependencies": {
+    "selenium-webdriver": "^4.12.0",
+    "chromedriver": "^116.0.0",
+    "exceljs": "^4.3.0",
+    "axios": "^1.4.0",
+    "form-data": "^4.0.0",
+    "pg": "^8.11.0",
+    "mkdirp": "^1.0.4"
+  }
+}

@@ -33,10 +33,9 @@ yarn-error.log*
 web/static/speech_output.wav
 *.wav
 *.mp3
+*.db
+*.sqlite*
 
-# ── Test report spreadsheets (auto-generated) ────────────────────────────────
-web/E2E_Test_Report_*.xlsx
-E2E_Test_Report_*.xlsx
 
 # ── OS artefacts ─────────────────────────────────────────────────────────────
 .DS_Store
