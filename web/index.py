@@ -23,8 +23,8 @@ app.secret_key = os.environ.get("SECRET_KEY", "legalease-secret-key-2026")
 # Initialize database (creates tables if missing)
 init_db()
 
-# --- LOCAL CONFIGURATION ---
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+if os.name == 'nt' and os.path.exists(r'C:\Program Files\Tesseract-OCR\tesseract.exe'):
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # Mapping structure for all 22 official regional language targets
 LANGUAGE_CONFIG = {
