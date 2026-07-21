@@ -5,9 +5,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import re
 import pytesseract
-from backend.db import init_db, save_transaction_to_db
+from backend.db import init_db, save_transaction_to_db, create_user, authenticate_user, get_user_by_id
 from PIL import Image
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 # Importing the official native library to bypass Windows HTTP port errors
 import ollama
 
@@ -18,6 +18,7 @@ static_dir = os.path.join(base_dir, 'static')
 app = Flask(__name__, 
             template_folder=template_dir, 
             static_folder=static_dir)
+app.secret_key = os.environ.get("SECRET_KEY", "legalease-secret-key-2026")
 
 # Initialize database (creates tables if missing)
 init_db()
@@ -93,6 +94,60 @@ def get_ollama_response(prompt, target_lang):
         # Seamless safety net protection during your presentation
         return get_deterministic_fallback(target_lang)
 
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    data = request.get_json(silent=True) or request.form
+    username = (data.get('username') or '').strip()
+    email = (data.get('email') or '').strip()
+    password = data.get('password') or ''
+    full_name = (data.get('full_name') or '').strip()
+
+    if not username or not email or not password:
+        return jsonify({'error': 'Username, email and password are required'}), 400
+
+    user, err = create_user(username=username, email=email, password=password, full_name=full_name)
+    if err:
+        return jsonify({'error': err}), 400
+
+    session['user_id'] = user['id']
+    return jsonify({'message': 'Registration successful', 'user': user})
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json(silent=True) or request.form
+    username_or_email = (data.get('username_or_email') or data.get('username') or '').strip()
+    password = data.get('password') or ''
+
+    if not username_or_email or not password:
+        return jsonify({'error': 'Username/Email and password are required'}), 400
+
+    user, err = authenticate_user(username_or_email=username_or_email, password=password)
+    if err:
+        return jsonify({'error': err}), 401
+
+    session['user_id'] = user['id']
+    return jsonify({'message': 'Login successful', 'user': user})
+
+@app.route('/api/logout', methods=['POST'])
+def api_logout():
+    session.pop('user_id', None)
+    return jsonify({'message': 'Logged out successfully'})
+
+@app.route('/api/me')
+def api_me():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'authenticated': False, 'user': None})
+    user = get_user_by_id(user_id)
+    if not user:
+        session.pop('user_id', None)
+        return jsonify({'authenticated': False, 'user': None})
+    return jsonify({'authenticated': True, 'user': user})
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -121,6 +176,39 @@ def process():
         return jsonify({'summary': summary})
     except Exception as e:
         return jsonify({'error': str(e)})
+
+@app.route('/db')
+def db_inspector():
+    import sqlite3
+    db_path = os.path.join(os.path.dirname(base_dir), 'legalease.db')
+    if not os.path.exists(db_path):
+        db_path = 'legalease.db'
+        
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    users, documents, analyses = [], [], []
+    try:
+        cursor.execute("SELECT id, username, email, created_at FROM users ORDER BY id DESC;")
+        users = [dict(r) for r in cursor.fetchall()]
+    except Exception as e:
+        pass
+        
+    try:
+        cursor.execute("SELECT id, filename, created_at FROM documents ORDER BY id DESC;")
+        documents = [dict(r) for r in cursor.fetchall()]
+    except Exception as e:
+        pass
+        
+    try:
+        cursor.execute("SELECT id, document_id, language, summary_text, created_at FROM analyses ORDER BY id DESC;")
+        analyses = [dict(r) for r in cursor.fetchall()]
+    except Exception as e:
+        pass
+    
+    conn.close()
+    return render_template('db.html', users=users, documents=documents, analyses=analyses)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

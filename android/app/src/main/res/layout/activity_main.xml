@@ -1,12 +1,292 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:orientation="vertical"
+    android:background="#F0F2F5">
 
-    <WebView
+    <!-- Native App Toolbar Header -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        android:layout_height="?attr/actionBarSize"
+        android:background="#111827"
+        app:title="LegalEase 🏛️"
+        app:titleTextColor="#FFFFFF"
+        app:subtitle="AI Legal Document Translator"
+        app:subtitleTextColor="#059669" />
+
+    <!-- Native Navigation Tab Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#1F2937"
+        android:padding="4dp">
+
+        <Button
+            android:id="@+id/btnTabScan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Scan"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#059669"
+            android:textSize="12sp"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+
+        <Button
+            android:id="@+id/btnTabResults"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Explanation"
+            android:textColor="#9CA3AF"
+            android:backgroundTint="#1F2937"
+            android:textSize="12sp"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+
+        <Button
+            android:id="@+id/btnTabHistory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="History"
+            android:textColor="#9CA3AF"
+            android:backgroundTint="#1F2937"
+            android:textSize="12sp"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- PAGE 1: SCAN DOCUMENT -->
+            <LinearLayout
+                android:id="@+id/layoutPageScan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Document Reader"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#111827" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Select or take a photo of your official legal paper to get plain-language translation"
+                            android:textSize="13sp"
+                            android:textColor="#4B5563"
+                            android:layout_marginBottom="16dp" />
+
+                        <!-- Native Image Preview -->
+                        <ImageView
+                            android:id="@+id/imgPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            android:background="#E5E7EB"
+                            android:scaleType="fitCenter"
+                            android:layout_marginBottom="12dp"
+                            android:contentDescription="Document Preview" />
+
+                        <Button
+                            android:id="@+id/btnSelectImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="📷 Choose Photo or Take Picture"
+                            android:backgroundTint="#374151"
+                            android:textColor="#FFFFFF"
+                            android:layout_marginBottom="12dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Choose Target Language:"
+                            android:textStyle="bold"
+                            android:textColor="#111827"
+                            android:layout_marginBottom="4dp" />
+
+                        <Spinner
+                            android:id="@+id/spinnerLanguage"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="#F3F4F6"
+                            android:layout_marginBottom="16dp" />
+
+                        <Button
+                            android:id="@+id/btnProcessDocument"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:text="🚀 Read &amp; Explain My Document"
+                            android:textStyle="bold"
+                            android:textSize="15sp"
+                            android:backgroundTint="#059669"
+                            android:textColor="#FFFFFF" />
+
+                        <!-- Loading Layout -->
+                        <LinearLayout
+                            android:id="@+id/layoutLoading"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp"
+                            android:visibility="gone">
+
+                            <ProgressBar
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:indeterminateTint="#059669" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="AI is reading &amp; translating document..."
+                                android:textColor="#059669"
+                                android:textStyle="bold"
+                                android:layout_marginTop="8dp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- PAGE 2: EXPLANATION RESULTS -->
+            <LinearLayout
+                android:id="@+id/layoutPageResults"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/txtSelectedLanguage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Target: Tamil (தமிழ்)"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="#059669"
+                            android:background="#ECFDF5"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:layout_marginBottom="12dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Simple Explanation"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#111827"
+                            android:layout_marginBottom="12dp" />
+
+                        <TextView
+                            android:id="@+id/txtSummaryResult"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No document processed yet. Select a photo in the Scan tab."
+                            android:textSize="15sp"
+                            android:lineSpacingExtra="4dp"
+                            android:textColor="#111827"
+                            android:background="#F9FAFB"
+                            android:padding="16dp"
+                            android:layout_marginBottom="16dp" />
+
+                        <Button
+                            android:id="@+id/btnSpeakText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="🔊 Read Summary Out Loud (TTS)"
+                            android:backgroundTint="#059669"
+                            android:textColor="#FFFFFF" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- PAGE 3: HISTORY LOGS -->
+            <LinearLayout
+                android:id="@+id/layoutPageHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Past Search Records"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="#111827"
+                            android:layout_marginBottom="12dp" />
+
+                        <TextView
+                            android:id="@+id/txtHistoryLog"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No past document scans yet."
+                            android:textSize="14sp"
+                            android:textColor="#4B5563" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

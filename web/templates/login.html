@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalEase | Login & Register</title>
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <style>
+        :root { 
+            --primary-dark: #111827; 
+            --legal-green: #059669; 
+            --legal-green-hover: #047857;
+            --legal-light-bg: #ecfdf5;
+            --bg-canvas: #f0f2f5; 
+            --surface-card: rgba(255, 255, 255, 0.95);
+            --text-main: #1f2937;
+            --text-light: #4b5563;
+            --border-color: #e5e7eb;
+            --danger: #ef4444;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(rgba(17, 24, 39, 0.8), rgba(17, 24, 39, 0.8)), 
+                        url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=1920') no-repeat center center fixed;
+            background-size: cover;
+            padding: 1.5rem;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--surface-card);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            background: var(--primary-dark);
+            color: white;
+            padding: 2rem 1.5rem 1.5rem;
+            text-align: center;
+        }
+
+        .brand {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .brand span { color: var(--legal-green); }
+
+        .subtitle {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .tab-switcher {
+            display: flex;
+            background: #f3f4f6;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--legal-green);
+            background: white;
+            border-bottom-color: var(--legal-green);
+        }
+
+        .form-container {
+            padding: 2rem 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.2s;
+            background: #ffffff;
+        }
+
+        .form-control:focus {
+            border-color: var(--legal-green);
+            box-shadow: 0 0 0 3px rgba(5,150,105,0.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.85rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: 0.2s;
+            background: var(--legal-green);
+            color: white;
+            margin-top: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--legal-green-hover);
+        }
+
+        .alert-box {
+            display: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: var(--legal-light-bg);
+            color: var(--legal-green);
+            border: 1px solid #a7f3d0;
+        }
+
+        .footer-note {
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .footer-note a {
+            color: var(--legal-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-note a:hover {
+            text-underline-offset: 3px;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="card-header">
+            <div class="brand">Legal<span>Ease</span> 🏛️</div>
+            <div class="subtitle">AI-Powered Legal Document Portal</div>
+        </div>
+
+        <div class="tab-switcher">
+            <button id="tab-login" class="tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
+            <button id="tab-register" class="tab-btn" onclick="switchAuthTab('register')">Create Account</button>
+        </div>
+
+        <div class="form-container">
+            <div id="alert-msg" class="alert-box"></div>
+
+            <!-- Login Form -->
+            <form id="form-login" onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label for="login-user">Username or Email</label>
+                    <input type="text" id="login-user" required class="form-control" placeholder="Enter username or email">
+                </div>
+                <div class="input-group">
+                    <label for="login-pass">Password</label>
+                    <input type="password" id="login-pass" required class="form-control" placeholder="Enter password">
+                </div>
+                <button type="submit" class="btn">Sign In to Account</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="form-register" style="display: none;" onsubmit="handleRegister(event)">
+                <div class="input-group">
+                    <label for="reg-fullname">Full Name</label>
+                    <input type="text" id="reg-fullname" required class="form-control" placeholder="e.g. Ramesh Kumar">
+                </div>
+                <div class="input-group">
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" required class="form-control" placeholder="Choose a unique username">
+                </div>
+                <div class="input-group">
+                    <label for="reg-email">Email Address</label>
+                    <input type="email" id="reg-email" required class="form-control" placeholder="name@example.com">
+                </div>
+                <div class="input-group">
+                    <label for="reg-pass">Password</label>
+                    <input type="password" id="reg-pass" minlength="4" required class="form-control" placeholder="At least 4 characters">
+                </div>
+                <button type="submit" class="btn">Create Account</button>
+            </form>
+        </div>
+
+        <div class="footer-note">
+            Back to <a href="/">Dashboard</a> | Secured via LegalEase Auth Engine
+        </div>
+    </div>
+
+    <script>
+        function showAlert(msg, type = 'error') {
+            const el = document.getElementById('alert-msg');
+            el.innerText = msg;
+            el.className = `alert-box alert-${type}`;
+            el.style.display = 'block';
+        }
+
+        function clearAlert() {
+            const el = document.getElementById('alert-msg');
+            el.style.display = 'none';
+        }
+
+        function switchAuthTab(tab) {
+            clearAlert();
+            if (tab === 'login') {
+                document.getElementById('tab-login').classList.add('active');
+                document.getElementById('tab-register').classList.remove('active');
+                document.getElementById('form-login').style.display = 'block';
+                document.getElementById('form-register').style.display = 'none';
+            } else {
+                document.getElementById('tab-register').classList.add('active');
+                document.getElementById('tab-login').classList.remove('active');
+                document.getElementById('form-register').style.display = 'block';
+                document.getElementById('form-login').style.display = 'none';
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            clearAlert();
+            const username_or_email = document.getElementById('login-user').value;
+            const password = document.getElementById('login-pass').value;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username_or_email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showAlert('Login successful! Redirecting...', 'success');
+                    setTimeout(() => { window.location.href = '/'; }, 800);
+                } else {
+                    showAlert(data.error || 'Login failed');
+                }
+            } catch (err) {
+                showAlert('Network error: Could not reach backend server');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            clearAlert();
+            const full_name = document.getElementById('reg-fullname').value;
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-pass').value;
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ full_name, username, email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showAlert('Account created successfully! Redirecting...', 'success');
+                    setTimeout(() => { window.location.href = '/'; }, 800);
+                } else {
+                    showAlert(data.error || 'Registration failed');
+                }
+            } catch (err) {
+                showAlert('Network error: Could not reach backend server');
+            }
+        }
+    </script>
+</body>
+</html>

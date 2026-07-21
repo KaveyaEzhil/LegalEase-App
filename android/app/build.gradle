@@ -22,7 +22,7 @@ plugins {
 
 def twaManifest = [
     applicationId: 'com.legalease.app',
-    hostName: '172.18.98.220', // The domain being opened in the TWA.
+    hostName: '172.23.49.197:8080', // The domain & port being opened in the TWA.
     launchUrl: '/', // The start path for the TWA. Must be relative to the domain.
     name: 'LegalEase AI Assistant', // The application name.
     launcherName: 'LegalEase', // The name shown on the Android Launcher.
@@ -34,18 +34,10 @@ def twaManifest = [
     navigationDividerColorDark: '#000000', // The dark navbar divider color.
     backgroundColor: '#FFFFFF', // The color used for the splash screen background.
     enableNotifications: true, // Set to true to enable notification delegation.
-    // Every shortcut must include the following fields:
-    // - name: String that will show up in the shortcut.
-    // - short_name: Shorter string used if |name| is too long.
-    // - url: Absolute path of the URL to launch the app with (e.g '/create').
-    // - icon: Name of the resource in the drawable folder to use as an icon.
     shortcuts: [],
-    // The duration of fade out animation in milliseconds to be played when removing splash screen.
     splashScreenFadeOutDuration: 300,
     generatorApp: 'bubblewrap-cli', // Application that generated the Android Project
-    // The fallback strategy for when Trusted Web Activity is not available. Possible values are
-    // 'customtabs' and 'webview'.
-    fallbackType: 'customtabs',
+    fallbackType: 'webview',
     enableSiteSettingsShortcut: 'true',
     orientation: 'default',
 ]
@@ -67,21 +59,11 @@ android {
         resValue "string", "launcherName", twaManifest.launcherName
 
         // The URL that will be used when launching the TWA from the Android Launcher
-        def launchUrl = "https://" + twaManifest.hostName + twaManifest.launchUrl
+        def launchUrl = "http://" + twaManifest.hostName + twaManifest.launchUrl
         resValue "string", "launchUrl", launchUrl
 
-        
-
-        
-            // The URL the Web Manifest for the Progressive Web App that the TWA points to. This
-            // is used by Chrome OS and Meta Quest to open the Web version of the PWA instead of
-            // the TWA, as it will probably give a better user experience for non-mobile devices.
-            resValue "string", "webManifestUrl", 'http://172.18.98.220:8080/static/manifest.json'
-        
-
-        
-            // This is used by Meta Quest.
-            resValue "string", "fullScopeUrl", 'http://172.18.98.220:8080/static/'
+        resValue "string", "webManifestUrl", 'http://172.23.49.197:8080/static/manifest.json'
+        resValue "string", "fullScopeUrl", 'http://172.23.49.197:8080/static/'
         
 
         
@@ -207,7 +189,7 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    
-        implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
-    
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
 }

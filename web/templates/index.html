@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LegalEase | Simple Legal Help</title>
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <style>
@@ -12,7 +12,7 @@
             --legal-green-hover: #047857;
             --legal-light-bg: #ecfdf5;
             --bg-canvas: #f0f2f5; 
-            --surface-card: rgba(255, 255, 255, 0.95); /* Slight transparency to let bg show through */
+            --surface-card: rgba(255, 255, 255, 0.95);
             --text-main: #1f2937;
             --text-light: #4b5563;
             --border-color: #e5e7eb;
@@ -21,29 +21,28 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
             color: var(--text-main); 
             line-height: 1.5; 
             min-height: 100vh; 
             display: flex; 
             flex-direction: column;
-            /* Fills the empty background gaps with a subtle scales-of-justice watermark */
             background: linear-gradient(rgba(240, 242, 245, 0.85), rgba(240, 242, 245, 0.85)), 
                         url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=1920') no-repeat center center fixed;
             background-size: cover;
         }
         
         /* Top Navigation Bar */
-        .navbar { background: var(--primary-dark); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; }
-        .brand { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.05em; display: flex; align-items: center; gap: 0.5rem; }
+        .navbar { background: var(--primary-dark); color: white; padding: 0.85rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; }
+        .brand { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.05em; display: flex; align-items: center; gap: 0.5rem; }
         .brand span { color: var(--legal-green); }
         
-        .nav-links { display: flex; gap: 1rem; list-style: none; }
-        .nav-links a { color: #9ca3af; text-decoration: none; font-weight: 600; cursor: pointer; transition: 0.2s; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.95rem; }
+        .nav-links { display: flex; gap: 0.5rem; list-style: none; align-items: center; }
+        .nav-links a { color: #9ca3af; text-decoration: none; font-weight: 600; cursor: pointer; transition: 0.2s; padding: 0.5rem 0.8rem; border-radius: 8px; font-size: 0.88rem; }
         .nav-links a:hover, .nav-links a.active { color: white; background: var(--legal-green); }
         
         /* Main Container Layout */
-        .dashboard-container { flex: 1; width: 100%; max-width: 100%; padding: 2rem; margin: 0 auto; }
+        .dashboard-container { flex: 1; width: 100%; max-width: 100%; padding: 1.5rem; margin: 0 auto; }
         
         /* Navigation Panels */
         .app-page { display: none; width: 100%; }
@@ -51,53 +50,101 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         /* Split Grid Structure */
-        .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; width: 100%; align-items: start; }
+        .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; align-items: start; }
         
         /* Presentation Cards */
-        .portal-card { background: var(--surface-card); border-radius: 14px; padding: 2rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border: 1px solid var(--border-color); width: 100%; backdrop-filter: blur(4px); }
-        .page-header { margin-bottom: 1.5rem; }
-        .page-header h2 { font-size: 1.6rem; color: var(--primary-dark); margin-bottom: 0.4rem; font-weight: 700; }
-        .page-header p { color: var(--text-light); font-size: 0.95rem; }
+        .portal-card { background: var(--surface-card); border-radius: 14px; padding: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border: 1px solid var(--border-color); width: 100%; backdrop-filter: blur(4px); }
+        .page-header { margin-bottom: 1.25rem; }
+        .page-header h2 { font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 0.3rem; font-weight: 700; }
+        .page-header p { color: var(--text-light); font-size: 0.9rem; }
         
         /* Stats Widgets */
         .widgets-column { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .widget-box { background: var(--surface-card); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); text-align: left; position: relative; overflow: hidden; backdrop-filter: blur(4px); }
+        .widget-box { background: var(--surface-card); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); text-align: left; position: relative; overflow: hidden; backdrop-filter: blur(4px); }
         .widget-box::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--legal-green); }
-        .widget-title { font-size: 0.85rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; }
-        .widget-value { font-size: 2rem; font-weight: 700; color: var(--primary-dark); margin-top: 0.25rem; }
+        .widget-title { font-size: 0.8rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; }
+        .widget-value { font-size: 1.75rem; font-weight: 700; color: var(--primary-dark); margin-top: 0.2rem; }
         
         /* Form Styling */
-        .input-group { margin-bottom: 1.25rem; text-align: left; }
-        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: var(--primary-dark); }
-        .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; transition: 0.2s; outline: none; background: #f9fafb; }
+        .input-group { margin-bottom: 1.1rem; text-align: left; }
+        .input-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.88rem; color: var(--primary-dark); }
+        .form-control { width: 100%; padding: 0.7rem 0.9rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.9rem; transition: 0.2s; outline: none; background: #f9fafb; }
         .form-control:focus { border-color: var(--legal-green); box-shadow: 0 0 0 3px rgba(5,150,105,0.15); background: white; }
         
         /* Green Accent Buttons */
-        .btn { width: 100%; padding: 0.9rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 1rem; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1rem; text-align: center; }
+        .btn { width: 100%; padding: 0.85rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 0.75rem; text-align: center; }
         .btn-primary { background: var(--legal-green); color: white; }
         .btn-primary:hover { background: var(--legal-green-hover); }
         .btn-secondary { background: #4b5563; color: white; }
         .btn-secondary:hover { background: #374151; }
         
         /* Simple Loader */
-        .loader-wrapper { display: none; margin: 1.5rem 0; text-align: center; }
-        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--legal-green); border-radius: 50%; width: 35px; height: 35px; animation: spin 0.8s linear infinite; margin: 0 auto 0.75rem; }
+        .loader-wrapper { display: none; margin: 1.25rem 0; text-align: center; }
+        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--legal-green); border-radius: 50%; width: 32px; height: 32px; animation: spin 0.8s linear infinite; margin: 0 auto 0.5rem; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* Image Preview Section */
-        .preview-box { width: 100%; height: 280px; border: 2px dashed #cbd5e1; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: var(--text-light); background: rgba(248, 250, 252, 0.8); font-size: 0.95rem; overflow: hidden; }
+        .preview-box { width: 100%; height: 240px; border: 2px dashed #cbd5e1; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: var(--text-light); background: rgba(248, 250, 252, 0.8); font-size: 0.9rem; overflow: hidden; }
         .preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
         
         /* Clean Results Frame */
-        .meta-badge { display: inline-flex; align-items: center; background: var(--legal-light-bg); color: var(--legal-green); padding: 0.35rem 1rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; border: 1px solid #a7f3d0; }
-        .output-block { background: var(--surface-card); border-left: 5px solid var(--legal-green); padding: 1.5rem; border-radius: 0 10px 10px 0; margin-bottom: 1.5rem; white-space: pre-line; font-size: 1.05rem; color: #111827; border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); min-height: 200px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .meta-badge { display: inline-flex; align-items: center; background: var(--legal-light-bg); color: var(--legal-green); padding: 0.3rem 0.85rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.85rem; border: 1px solid #a7f3d0; }
+        .output-block { background: var(--surface-card); border-left: 5px solid var(--legal-green); padding: 1.25rem; border-radius: 0 10px 10px 0; margin-bottom: 1.25rem; white-space: pre-line; font-size: 0.98rem; color: #111827; border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); min-height: 180px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         
         /* History Log Table */
-        .table-responsive { background: var(--surface-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); width: 100%; }
+        .table-responsive { background: var(--surface-card); border-radius: 12px; overflow-x: auto; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); width: 100%; }
         .history-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .history-table th { background: #f9fafb; padding: 1rem 1.5rem; font-weight: 600; font-size: 0.85rem; color: var(--text-light); border-bottom: 1px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.05em; }
-        .history-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; }
-        .status-pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: var(--legal-light-bg); color: var(--legal-green); }
+        .history-table th { background: #f9fafb; padding: 0.85rem 1rem; font-weight: 600; font-size: 0.8rem; color: var(--text-light); border-bottom: 1px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.05em; }
+        .history-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-color); font-size: 0.88rem; }
+        .status-pill { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.72rem; font-weight: 600; background: var(--legal-light-bg); color: var(--legal-green); }
+
+        /* Responsive Mobile Layout Adaptations */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 0.65rem;
+                padding: 0.65rem 0.75rem;
+                text-align: center;
+            }
+            .brand {
+                font-size: 1.3rem;
+            }
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.3rem;
+                width: 100%;
+            }
+            .nav-links a {
+                padding: 0.35rem 0.55rem;
+                font-size: 0.78rem;
+                white-space: nowrap;
+            }
+            .dashboard-container {
+                padding: 0.65rem;
+            }
+            .split-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem;
+            }
+            .widgets-column {
+                grid-template-columns: 1fr !important;
+            }
+            .widget-box {
+                grid-column: span 1 !important;
+                padding: 1rem;
+            }
+            .portal-card {
+                padding: 1rem;
+                border-radius: 10px;
+            }
+            .preview-box {
+                height: 200px;
+            }
+            .page-header h2 {
+                font-size: 1.25rem;
+            }
+        }
 
         @media print {
             .navbar, .btn, .meta-badge, .widget-box, .preview-box { display: none !important; }
@@ -115,6 +162,7 @@
             <li><a id="link-scan" class="active" onclick="switchPage('page-scan')">Scan Document</a></li>
             <li><a id="link-results" onclick="switchPage('page-results')">See Explanation</a></li>
             <li><a id="link-history" onclick="switchPage('page-history')">Past History Logs</a></li>
+            <li id="auth-nav-item"><a href="/login" style="background: var(--legal-green); color: white; padding: 0.4rem 0.75rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.8rem;">Login / Register</a></li>
         </ul>
     </nav>
 
@@ -148,7 +196,7 @@
                                 <option value="Malayalam">Malayalam (മലയാളം)</option>
                                 <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
                                 <option value="Assamese">Assamese (অসমীয়)</option>
-                                <option value="Odia">Odia (ଓڈ଼ିଆ)</option>
+                                <option value="Odia">Odia (ଓଡ଼ିଆ)</option>
                                 <option value="Kashmiri">Kashmiri (کأشُر)</option>
                                 <option value="Sanskrit">Sanskrit (संस्कृतम्)</option>
                                 <option value="Urdu">Urdu (اردو)</option>
@@ -167,7 +215,7 @@
                     
                     <div class="loader-wrapper" id="loader">
                         <div class="spinner"></div>
-                        <p style="color: var(--text-light); font-size: 0.9rem; font-weight: 500;">AI is reading your document now. Please wait a moment...</p>
+                        <p style="color: var(--text-light); font-size: 0.85rem; font-weight: 500;">AI is reading your document now. Please wait a moment...</p>
                     </div>
                 </div>
                 
@@ -194,12 +242,12 @@
                 
                 <div class="portal-card">
                     <div class="widget-title" style="margin-bottom: 0.75rem;">Your Document Copy</div>
-                    <div class="preview-box" id="result-side-preview" style="height: 400px;">No document uploaded.</div>
+                    <div class="preview-box" id="result-side-preview" style="height: 320px;">No document uploaded.</div>
                 </div>
 
                 <div class="portal-card">
                     <span class="meta-badge" id="report-lang-badge">Selected Language: None</span>
-                    <h2 style="color: var(--primary-dark); margin-bottom: 1rem;">Simple Explanation</h2>
+                    <h2 style="color: var(--primary-dark); margin-bottom: 0.75rem;">Simple Explanation</h2>
                     
                     <div id="summaryText" class="output-block">No text processed yet. Please go back to the first tab and upload a document.</div>
                     
@@ -213,7 +261,7 @@
         <section id="page-history" class="app-page">
             <div class="page-header" style="text-align: left;">
                 <h2>Past Search Records</h2>
-                <p>A list of documents you have processed in this browser session</p>
+                <p>A list of documents you have processed in this session</p>
             </div>
             <div class="table-responsive">
                 <table class="history-table">
@@ -226,7 +274,7 @@
                         </tr>
                     </thead>
                     <tbody id="history-log-rows">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
         </section>
@@ -280,7 +328,7 @@
                 <tr>
                     <td>${log.timestamp}</td>
                     <td><strong>${log.lang}</strong></td>
-                    <td style="color: var(--text-light); max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${log.snippet}</td>
+                    <td style="color: var(--text-light); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${log.snippet}</td>
                     <td><span class="status-pill">Saved Locally</span></td>
                 </tr>
             `).join('');
@@ -326,17 +374,12 @@
         };
 
         function speak() {
-            window.speechSynthesis.cancel(); // Stop any stuck audio loops immediately
-            
-            // Grab the clean text from the correct display viewport
+            window.speechSynthesis.cancel();
             let textToRead = document.getElementById('summaryText').innerText;
-            
-            // Safety guard: Don't execute if empty or unparsed
             if (!textToRead || textToRead.startsWith("No text processed")) {
                 return;
             }
 
-            // Clean template scaffolding artifacts before rendering voice strings
             textToRead = textToRead.replace(/\[Processing complete.*?\]/g, "");
             textToRead = textToRead.replace(/Enforcing localized.*?\]/g, "");
             textToRead = textToRead.trim();
@@ -359,7 +402,7 @@
             }
             
             audioUtteranceNode.lang = structuralISOCodeValue;
-            audioUtteranceNode.rate = 0.90; // Balanced speech cadence for presentation clarity
+            audioUtteranceNode.rate = 0.90;
 
             if ('speechSynthesis' in window) {
                 const systemMouthProfiles = window.speechSynthesis.getVoices();
@@ -376,9 +419,36 @@
             window.speechSynthesis.speak(audioUtteranceNode);
         }
 
+        async function checkAuthStatus() {
+            try {
+                const res = await fetch('/api/me');
+                const data = await res.json();
+                const navItem = document.getElementById('auth-nav-item');
+                if (data.authenticated && data.user) {
+                    const displayName = data.user.full_name || data.user.username;
+                    navItem.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.4rem;">
+                            <span style="color: #e5e7eb; font-size: 0.78rem;">👤 <strong>${displayName}</strong></span>
+                            <button onclick="handleLogout()" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; padding: 0.2rem 0.4rem; border-radius: 6px; cursor: pointer; font-size: 0.72rem; font-weight: 600;">Logout</button>
+                        </div>
+                    `;
+                } else {
+                    navItem.innerHTML = `<a href="/login" style="background: var(--legal-green); color: white; padding: 0.4rem 0.75rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.8rem;">Login / Register</a>`;
+                }
+            } catch (e) {
+                console.error("Auth status check failed", e);
+            }
+        }
+
+        async function handleLogout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.reload();
+        }
+
         window.onload = () => { 
             updateDashboardMetrics();
             renderLedgerDataRows(); 
+            checkAuthStatus();
         };
         if ('speechSynthesis' in window) {
             window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();

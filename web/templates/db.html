@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalEase | Database Inspector</title>
+    <style>
+        :root {
+            --primary-dark: #111827;
+            --legal-green: #059669;
+            --surface-card: #ffffff;
+            --text-main: #1f2937;
+            --border-color: #e5e7eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; color: var(--text-main); line-height: 1.5; padding: 20px; }
+        
+        .header { background: var(--primary-dark); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; }
+        .header h1 span { color: var(--legal-green); }
+        .back-btn { background: var(--legal-green); color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; }
+        
+        .section-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        .section-title { font-size: 1.2rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #f9fafb; padding: 12px 16px; font-size: 0.85rem; text-transform: uppercase; color: #6b7280; border-bottom: 2px solid var(--border-color); }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; word-break: break-word; }
+        tr:hover { background: #f9fafb; }
+        
+        .badge { background: #ecfdf5; color: var(--legal-green); padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; border: 1px solid #a7f3d0; }
+        .empty-state { color: #9ca3af; font-style: italic; padding: 10px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏛️ LegalEase <span>SQLite Database</span> Inspector</h1>
+        <a href="/" class="back-btn">⬅️ Back to Main App</a>
+    </div>
+
+    <!-- USERS TABLE -->
+    <div class="section-card">
+        <div class="section-title">👤 Registered Users Table (<span class="badge">{{ users|length }} records</span>)</div>
+        {% if users %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email Address</th>
+                    <th>Registration Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td><strong>#{{ u.id }}</strong></td>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No user accounts registered yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- DOCUMENTS TABLE -->
+    <div class="section-card">
+        <div class="section-title">📄 Documents Table (<span class="badge">{{ documents|length }} records</span>)</div>
+        {% if documents %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Uploaded Filename</th>
+                    <th>Upload Date & Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in documents %}
+                <tr>
+                    <td><strong>#{{ d.id }}</strong></td>
+                    <td><code>{{ d.filename }}</code></td>
+                    <td>{{ d.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No documents uploaded yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- ANALYSES TABLE -->
+    <div class="section-card">
+        <div class="section-title">📊 Document Analyses Table (<span class="badge">{{ analyses|length }} records</span>)</div>
+        {% if analyses %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Doc ID</th>
+                    <th>Target Language</th>
+                    <th>AI Translation Summary Snippet</th>
+                    <th>Processing Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in analyses %}
+                <tr>
+                    <td><strong>#{{ a.id }}</strong></td>
+                    <td>#{{ a.document_id }}</td>
+                    <td><span class="badge">{{ a.language }}</span></td>
+                    <td style="max-width: 450px;">{{ a.summary_text[:120] }}...</td>
+                    <td>{{ a.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No document analysis records generated yet.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>
