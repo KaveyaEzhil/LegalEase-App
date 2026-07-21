@@ -1,4 +1,4 @@
-name: LegalEase CI & Auto-Commit
+name: LegalEase CI & Automated Test Suite
 
 on:
   push:
@@ -34,11 +34,11 @@ jobs:
           if [ -f web/requirements.txt ]; then pip install -r web/requirements.txt; fi
           if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
 
-      - name: Run Python unit tests
+      - name: Run 200+ Automated Unit Tests Verbose
         env:
-          PYTHONPATH: web:backend
+          PYTHONPATH: web:backend:.
         run: |
-          python -m unittest tests/test_index_unit.py
+          python -m unittest discover -v -s tests -p "test_*.py"
 
       - name: Auto-commit generated changes
         uses: stefanzweifel/git-auto-commit-action@v5
