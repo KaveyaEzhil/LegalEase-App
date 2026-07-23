@@ -45,9 +45,37 @@ jobs:
         run: |
           python -m unittest discover -v -s tests -p "test_*.py"
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Selenium Web E2E Tests (Simulation)
+        env:
+          HEADLESS: 'true'
+        run: |
+          cd selenium_node_tests
+          npm install
+          node run_e2e.js
+
+      - name: Run Appium Mobile E2E Tests (Simulation)
+        run: |
+          cd appium_node_tests
+          npm install
+          node run_e2e_mobile.js
+
+      - name: Upload E2E Reports as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: E2E-Verification-Reports
+          path: |
+            E2E_Report_LegalEase.xlsx
+            Mobile_E2E_Report_LegalEase.xlsx
+
       - name: Auto-commit generated changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto-sync CI changes [skip ci]"
           branch: ${{ github.head_ref || github.ref_name }}
           file_pattern: '*'
+
