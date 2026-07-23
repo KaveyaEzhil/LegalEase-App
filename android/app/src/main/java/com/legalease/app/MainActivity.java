@@ -10,6 +10,8 @@ import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -20,7 +22,9 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
     private final static int FILECHOOSER_RESULTCODE = 1;
-    private String appServerUrl = "http://172.23.49.197:8080";
+    private boolean isFallbackAttempted = false;
+    private String primaryUrl = "http://127.0.0.1:8080";
+    private String fallbackUrl = "http://172.23.49.197:8080";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
         settings.setLoadWithOverviewMode(true);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
-        settings.setSupportZoom(true);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -49,15 +52,21 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (request.isForMainFrame() && !isFallbackAttempted) {
+                    isFallbackAttempted = true;
+                    view.loadUrl(fallbackUrl);
+                }
+            }
+
+            @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // Inject native Android Print bridge into window.print()
                 view.loadUrl("javascript:window.print = function() { AndroidPrint.printPage(); };");
             }
         });
 
         webView.setWebChromeClient(new WebChromeClient() {
-            // Enable Native File & Camera Chooser for file uploads
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 if (MainActivity.this.filePathCallback != null) {
@@ -77,11 +86,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Add JavaScript interface for native printing
         webView.addJavascriptInterface(new WebPrintInterface(this), "AndroidPrint");
 
-        // Load the exact web app dashboard
-        webView.loadUrl(appServerUrl);
+        // Try USB Reverse tunnel (127.0.0.1:8080) first, fallback to Wi-Fi IP (172.23.49.197:8080)
+        webView.loadUrl(primaryUrl);
     }
 
     public class WebPrintInterface {
