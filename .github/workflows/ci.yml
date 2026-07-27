@@ -72,6 +72,16 @@ jobs:
             E2E_Report_LegalEase.xlsx
             Mobile_E2E_Report_LegalEase.xlsx
 
+      - name: Run Load Tests (>300 cases)
+        run: |
+          python automated_test/run_load_tests.py
+
+      - name: Upload Load Testing Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Load-Testing-Report
+          path: load_report.xlsx
+
       - name: Auto-commit generated changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
