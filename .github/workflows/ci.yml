@@ -82,6 +82,16 @@ jobs:
           name: Load-Testing-Report
           path: load_report.xlsx
 
+      - name: Generate Security Test Cases (>300 cases)
+        run: |
+          python automated_test/generate_security_test_cases.py
+
+      - name: Upload Security Test Cases Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vulnerability-Report
+          path: vulnerability_report.xlsx
+
       - name: Auto-commit generated changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
