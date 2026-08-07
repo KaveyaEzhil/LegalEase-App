@@ -25,7 +25,11 @@ const CATEGORIES = [
   { name: 'Accessibility Testing', prefix: 'ACC', desc: 'Assert mobile accessibility labels, contrast scales, and screen-readers compatibility for' },
   { name: 'Mobile-Specific Testing', prefix: 'SPEC', desc: 'Validate landscape rotation shifts, device pause/resume, and orientation bounds for' },
   { name: 'Regression Testing', prefix: 'REG', desc: 'Assert blurry image OCR alerts and error boundary fallback widgets for' },
-  { name: 'End-to-End Testing', prefix: 'E2E', desc: 'Execute complete mobile E2E flow: load document, choose language, verify audio routing for' }
+  { name: 'End-to-End Testing', prefix: 'E2E', desc: 'Execute complete mobile E2E flow: load document, choose language, verify audio routing for' },
+  { name: 'Network Resiliency Testing', prefix: 'NET', desc: 'Verify offline caching, slow connection fallbacks, and connection retry mechanisms for' },
+  { name: 'Localization & Locale Testing', prefix: 'LOC', desc: 'Assert translation accuracy, script encoding, font sizing, and language direction for' },
+  { name: 'Session & State Lifecycle Testing', prefix: 'SESS', desc: 'Verify session cookie token persistence, automatic logout triggers, and profile caching for' },
+  { name: 'Data Integrity & Validation Testing', prefix: 'VAL', desc: 'Assert raw OCR string boundaries, length thresholds, base64 encoding integrity, and DB transaction safety for' }
 ];
 
 async function main() {

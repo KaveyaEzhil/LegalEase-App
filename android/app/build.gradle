@@ -22,7 +22,7 @@ plugins {
 
 def twaManifest = [
     applicationId: 'com.legalease.app',
-    hostName: '172.23.49.197:8080', // The domain & port being opened in the TWA.
+    hostName: 'localhost:8080', // The domain & port being opened in the TWA.
     launchUrl: '/', // The start path for the TWA. Must be relative to the domain.
     name: 'LegalEase AI Assistant', // The application name.
     launcherName: 'LegalEase', // The name shown on the Android Launcher.
@@ -62,8 +62,8 @@ android {
         def launchUrl = "http://" + twaManifest.hostName + twaManifest.launchUrl
         resValue "string", "launchUrl", launchUrl
 
-        resValue "string", "webManifestUrl", 'http://172.23.49.197:8080/static/manifest.json'
-        resValue "string", "fullScopeUrl", 'http://172.23.49.197:8080/static/'
+        resValue "string", "webManifestUrl", 'http://localhost:8080/static/manifest.json'
+        resValue "string", "fullScopeUrl", 'http://localhost:8080/static/'
         
 
         
